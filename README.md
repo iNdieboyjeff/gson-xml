@@ -80,6 +80,53 @@ You may also take a look at
 [SimpleXmlReaderTest](https://github.com/stanfy/gson-xml/blob/master/src/test/java/com/stanfy/gsonxml/test/SimpleXmlReaderTest.java)
 to see other samples.
 
+Deserializing lists
+-------------------
+
+Since there is no direct analogy of JSON arrays in XML, some ambiguity appears when you are trying to deserialize lists.
+`GsonXmlBuilder` has method `setSameNameLists(boolean)` in order to resolve this issue.
+
+Considering the following Java class
+```java
+class Container {
+  List<Person> persons;
+}
+```
+
+Call `setSameNameLists(false)` in order to deserialize such an object from the following XML:
+```xml
+<container>
+  <persons>
+    <any-tag-name id="1">
+      <name>John</name>
+    </any-tag-name>
+    <any-tag-name id="2">
+      <name>Mark</name>
+    </any-tag-name>
+  </persons>
+</container>
+```
+Note that tag names of `persons` tag children nodes are ignored.
+
+And call `setSameNameLists(true)` in order to deserialize such an object from another piece of XML:
+```xml
+<container>
+  <person id="1">
+    <name>John</name>
+  </person>
+  <person id="2">
+    <name>Mark</name>
+  </person>
+</container>
+```
+Don't forget to put `SerializedName('person')` annotation on `persons` field.
+
+Note that at the moment it's impossible to deserialize more than one list in the same container with option
+`setSameNameLists(true)`.
+
+Also be aware that currently it's impossible to deserialize XML structure where both types of lists exist.
+
+
 Download
 --------
 
@@ -97,8 +144,8 @@ Gradle example:
 compile 'com.stanfy:gson-xml-java:0.1.+'
 ```
 
-Android Note
-------------
+Android Notes
+-------------
 
 In order to use this library in Android project, copy only `gson-xml` and `gson` jars to the project libraries folder.
 `kxml2` and `xmlpull` jars are not required since `XmlPullParser` is a part of Android SDK.
@@ -109,6 +156,12 @@ compile('com.stanfy:gson-xml-java:0.1.+') {
 }
 ```
 
+Also be aware that Android SDK up to 'Ice Cream Sandwich' returns instance of `ExpatPullParser` when you call
+[Xml.newPullParser()](http://developer.android.com/reference/android/util/Xml.html#newPullParser()).
+And this parser does not support namespaces.
+
+Read also this [blog post](http://android-developers.blogspot.com/2011_12_01_archive.html) about issues with
+Android XML parsers.
 
 License
 -------
